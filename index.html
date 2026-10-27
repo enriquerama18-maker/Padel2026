@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pádel Master - Torneo</title>
+
+  <!-- Tailwind CSS CDN + configuración -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind.config.js"></script>
+  <!-- FontAwesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Estilos propios -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-[#050914] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-neon selection:text-black overflow-x-hidden">
+
+  <!-- Todo el contenido se genera en js/shell.js -->
+  <div id="app" class="flex flex-col min-h-screen"></div>
+
+  <!-- Firebase (solo base de datos; esta página NO tiene login ni acceso admin) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/logic.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/public.js"></script>
+</body>
+</html>

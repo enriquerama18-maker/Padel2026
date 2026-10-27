@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 9999px;
+}
+
+.neon-glow {
+  box-shadow: 0 0 15px rgba(204, 255, 0, 0.22);
+}
+
+/* Modales con scroll en celulares chicos */
+.modal-scroll {
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* ============ LLAVES (cuadro de eliminación) ============ */
+.bracket {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  min-width: max-content;
+  padding-bottom: 4px;
+}
+.bracket-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 10px;
+  width: 215px;
+}
+.bracket-title {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ccff00;
+  background: rgba(204, 255, 0, 0.08);
+  border: 1px solid rgba(204, 255, 0, 0.2);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+.bracket-match {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.bracket-match.clickable {
+  cursor: pointer;
+}
+.bracket-match.clickable:hover {
+  border-color: #ccff00;
+}
+.bracket-team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  font-size: 11px;
+  color: #cbd5e1;
+}
+.bracket-team + .bracket-team {
+  border-top: 1px solid #1e293b;
+}
+.bracket-team.win {
+  background: rgba(16, 185, 129, 0.15);
+  color: #fff;
+  font-weight: 800;
+}
+.bracket-meta {
+  font-size: 9px;
+  color: #64748b;
+  background: #020617;
+  padding: 3px 9px;
+  border-top: 1px solid #1e293b;
+}

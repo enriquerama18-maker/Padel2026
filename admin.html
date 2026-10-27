@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Panel del Organizador - Pádel Master</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind.config.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-[#050914] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-neon selection:text-black overflow-x-hidden">
+
+  <!-- ================= LOGIN (usuario + contraseña reales) ================= -->
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
+      <div class="w-12 h-12 bg-neon/20 text-neon rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h1 class="text-base font-black text-white">Panel del Organizador</h1>
+      <p class="text-[11px] text-slate-400 mb-4">Acceso privado. Ingresá con tu cuenta.</p>
+
+      <form onsubmit="doLogin(event)" class="space-y-2.5 text-left text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Email</label>
+          <input type="email" id="loginEmail" required autocomplete="username" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Contraseña</label>
+          <input type="password" id="loginPass" required autocomplete="current-password" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-neon">
+        </div>
+        <p id="loginError" class="hidden text-red-400 text-[11px] font-semibold"></p>
+        <button id="loginBtn" type="submit" class="w-full py-2.5 rounded-xl bg-neon hover:bg-neon/90 text-slate-950 font-black text-sm mt-1">Ingresar</button>
+      </form>
+      <p id="demoHint" class="hidden mt-3 text-[10px] text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl p-2">
+        MODO DEMO: usá cualquier email y la contraseña <strong>1234</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- ================= APP (se muestra solo con sesión iniciada) ================= -->
+  <div id="app" class="hidden flex-col min-h-screen"></div>
+
+  <!-- ================= MODAL: COMPARTIR LINKS ================= -->
+  <div id="shareModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3.5 hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl relative modal-scroll">
+      <button onclick="closeModal('shareModal')" class="absolute top-3.5 right-3.5 text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <div class="flex items-center gap-2.5 mb-3">
+        <div class="w-9 h-9 rounded-xl bg-neon/20 text-neon flex items-center justify-center text-base"><i class="fa-solid fa-share-nodes"></i></div>
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-white">Links del Torneo</h3>
+          <p class="text-[10px] sm:text-[11px] text-slate-400">Cada link tiene un uso distinto.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="bg-slate-950 p-3 rounded-2xl border border-emerald-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-400 text-[11px] flex items-center gap-1"><i class="fa-solid fa-globe"></i> LINK PÚBLICO</span>
+            <span class="text-[9px] bg-emerald-500/10 text-emerald-300 px-2 py-0.5 rounded-full font-bold">Para jugadores</span>
+          </div>
+          <p class="text-[10px] text-slate-400">Solo lectura y en vivo. No tiene ningún acceso de administrador.</p>
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="publicLinkInput" readonly class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-slate-300 font-mono text-[10px] focus:outline-none">
+            <button onclick="copyText($('publicLinkInput').value,'Link público copiado')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-[11px] flex items-center gap-1 flex-shrink-0"><i class="fa-solid fa-copy"></i> Copiar</button>
+          </div>
+          <button onclick="shareLinkWhatsApp('public')" class="w-full py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/40 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition">
+            <i class="fa-brands fa-whatsapp text-sm"></i> Compartir al grupo de WhatsApp
+          </button>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-2xl border border-sky-500/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-sky-400 text-[11px] flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> LINK DE INSCRIPCIÓN</span>
+            <span class="text-[9px] bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded-full font-bold">Para anotarse</span>
+          </div>
+          <p class="text-[10px] text-slate-400">Para quienes no pueden acercarse al club. Te llega el aviso por WhatsApp.</p>
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="inscLinkInput" readonly class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-slate-300 font-mono text-[10px] focus:outline-none">
+            <button onclick="copyText($('inscLinkInput').value,'Link de inscripción copiado')" class="px-2.5 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold text-[11px] flex items-center gap-1 flex-shrink-0"><i class="fa-solid fa-copy"></i> Copiar</button>
+          </div>
+          <button onclick="shareLinkWhatsApp('insc')" class="w-full py-2 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/40 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition">
+            <i class="fa-brands fa-whatsapp text-sm"></i> Enviar link de inscripción
+          </button>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-neon text-[11px] flex items-center gap-1"><i class="fa-solid fa-key"></i> TU PANEL</span>
+            <span class="text-[9px] bg-neon/10 text-neon px-2 py-0.5 rounded-full font-bold">Privado · no compartir</span>
+          </div>
+          <p class="text-[10px] text-slate-400">Guardalo en favoritos. Pide email y contraseña.</p>
+          <div class="flex items-center gap-1.5">
+            <input type="text" id="adminLinkInput" readonly class="w-full bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-slate-300 font-mono text-[10px] focus:outline-none">
+            <button onclick="copyText($('adminLinkInput').value,'Link del panel copiado')" class="px-2.5 py-1.5 bg-neon hover:bg-neon/90 text-slate-950 rounded-xl font-bold text-[11px] flex items-center gap-1 flex-shrink-0"><i class="fa-solid fa-copy"></i> Copiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: AJUSTES ================= -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3.5 hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-4 sm:p-5 shadow-2xl relative modal-scroll">
+      <button onclick="closeModal('settingsModal')" class="absolute top-3 right-3 text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      <h3 class="text-sm sm:text-base font-bold text-white mb-3 flex items-center gap-1.5"><i class="fa-solid fa-gear text-neon"></i> Ajustes del torneo</h3>
+      <form onsubmit="saveSettings(event)" class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Nombre del torneo</label>
+          <input type="text" id="setNombre" required maxlength="60" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:outline-none focus:border-neon">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">WhatsApp del organizador (recibe las inscripciones)</label>
+          <input type="tel" id="setWhats" required placeholder="5493704123456" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-neon">
+          <p class="text-[10px] text-slate-500 mt-0.5">Con código de país, sin + ni espacios.</p>
+        </div>
+        <label class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 cursor-pointer">
+          <input type="checkbox" id="setAbierta" class="w-4 h-4 accent-lime-300">
+          <span class="text-slate-200 font-semibold">Inscripciones online abiertas</span>
+        </label>
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('settingsModal')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Cancelar</button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-neon hover:bg-neon/90 text-slate-950 font-bold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: PAREJA ================= -->
+  <div id="pairModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3.5 hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-4 sm:p-5 shadow-2xl relative modal-scroll">
+      <button onclick="closeModal('pairModal')" class="absolute top-3 right-3 text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      <h3 id="pairModalTitle" class="text-sm sm:text-base font-bold text-white mb-3 flex items-center gap-1.5"><i class="fa-solid fa-user-group text-neon"></i> Inscribir Pareja</h3>
+      <form id="pairForm" onsubmit="savePair(event)" class="space-y-2.5 text-xs">
+        <input type="hidden" id="pairId">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Jugador 1 *</label>
+          <input type="text" id="player1Name" required placeholder="Nombre y Apellido" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:outline-none focus:border-neon">
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Jugador 2 *</label>
+          <input type="text" id="player2Name" required placeholder="Nombre y Apellido" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:outline-none focus:border-neon">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5">Rama *</label>
+            <select id="pairRama" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white focus:border-neon"></select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5">Categoría *</label>
+            <select id="pairCategory" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white focus:border-neon"></select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5">Zona / Grupo</label>
+            <input type="text" id="pairGroup" placeholder="(lo asigna el sorteo)" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:border-neon">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5">WhatsApp</label>
+            <input type="tel" id="pairPhone" placeholder="Ej: 3704123456" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:border-neon">
+          </div>
+        </div>
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('pairModal')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Cancelar</button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-neon hover:bg-neon/90 text-slate-950 font-bold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: PARTIDO ================= -->
+  <div id="matchModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3.5 hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm sm:max-w-md w-full p-4 sm:p-5 shadow-2xl relative modal-scroll">
+      <button onclick="closeModal('matchModal')" class="absolute top-3 right-3 text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      <h3 id="matchModalTitle" class="text-sm sm:text-base font-bold text-white mb-3 flex items-center gap-1.5"><i class="fa-solid fa-calendar-plus text-neon"></i> Programar Partido</h3>
+      <form id="matchForm" onsubmit="saveMatch(event)" class="space-y-2.5 text-xs">
+        <input type="hidden" id="matchId">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5">Rama</label>
+            <select id="matchRama" onchange="onMatchCategoryChange()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white focus:border-neon"></select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5">Categoría</label>
+            <select id="matchCategory" onchange="onMatchCategoryChange()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white focus:border-neon"></select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Instancia / Fase</label>
+          <select id="matchPhase" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:border-neon">
+            <option value="Fase de Grupos">Fase de Grupos</option>
+            <option value="Octavos de Final">Octavos de Final</option>
+            <option value="Cuartos de Final">Cuartos de Final</option>
+            <option value="Semifinal">Semifinal</option>
+            <option value="Final">Gran Final</option>
+          </select>
+        </div>
+        <div class="space-y-2 p-2.5 bg-slate-950 rounded-2xl border border-slate-800">
+          <div>
+            <label class="block text-neon font-bold text-[11px] mb-0.5">Pareja 1</label>
+            <select id="matchPair1" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white focus:border-neon text-xs"></select>
+          </div>
+          <div>
+            <label class="block text-emerald-400 font-bold text-[11px] mb-0.5">Pareja 2</label>
+            <select id="matchPair2" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white focus:border-neon text-xs"></select>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5 text-[10px]">Día</label>
+            <input type="date" id="matchDate" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-1.5 py-1.5 text-white text-[11px] focus:border-neon">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5 text-[10px]">Horario</label>
+            <input type="time" id="matchTime" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-1.5 py-1.5 text-white text-[11px] focus:border-neon">
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5 text-[10px]">Cancha</label>
+            <input type="text" id="matchCourt" placeholder="Cancha 1" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-[11px] focus:border-neon">
+          </div>
+        </div>
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('matchModal')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Cancelar</button>
+          <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-neon hover:bg-neon/90 text-slate-950 font-bold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: MARCADOR ================= -->
+  <div id="resultModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3.5 hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-4 sm:p-5 shadow-2xl relative modal-scroll">
+      <button onclick="closeModal('resultModal')" class="absolute top-3 right-3 text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      <h3 class="text-sm sm:text-base font-bold text-white mb-0.5 flex items-center gap-1.5"><i class="fa-solid fa-trophy text-neon"></i> Cargar Marcador</h3>
+      <p id="resultModalMatchInfo" class="text-[10px] text-slate-400 mb-3 pb-1.5 border-b border-slate-800"></p>
+
+      <form id="resultForm" onsubmit="saveResult(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="resultMatchId">
+        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+          <div class="grid grid-cols-12 items-center gap-1.5 mb-2 pb-1.5 border-b border-slate-800 text-[9px] text-slate-400 font-bold">
+            <div class="col-span-6">PAREJA</div>
+            <div class="col-span-2 text-center">SET 1</div>
+            <div class="col-span-2 text-center">SET 2</div>
+            <div class="col-span-2 text-center">ST/3</div>
+          </div>
+          <div class="grid grid-cols-12 items-center gap-1.5 mb-2">
+            <div class="col-span-6 font-bold text-neon truncate text-[11px]" id="resultPair1Name">Pareja 1</div>
+            <div class="col-span-2"><input type="number" id="p1_s1" min="0" max="7" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-1 text-center text-white font-black text-xs focus:border-neon"></div>
+            <div class="col-span-2"><input type="number" id="p1_s2" min="0" max="7" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-1 text-center text-white font-black text-xs focus:border-neon"></div>
+            <div class="col-span-2"><input type="number" id="p1_s3" min="0" max="30" placeholder="ST" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-1 text-center text-white font-black text-xs focus:border-neon"></div>
+          </div>
+          <div class="grid grid-cols-12 items-center gap-1.5">
+            <div class="col-span-6 font-bold text-emerald-400 truncate text-[11px]" id="resultPair2Name">Pareja 2</div>
+            <div class="col-span-2"><input type="number" id="p2_s1" min="0" max="7" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-1 text-center text-white font-black text-xs focus:border-neon"></div>
+            <div class="col-span-2"><input type="number" id="p2_s2" min="0" max="7" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-1 text-center text-white font-black text-xs focus:border-neon"></div>
+            <div class="col-span-2"><input type="number" id="p2_s3" min="0" max="30" placeholder="ST" class="w-full bg-slate-800 border border-slate-700 rounded-lg py-1 text-center text-white font-black text-xs focus:border-neon"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5 text-[11px]">Estado</label>
+            <select id="resultStatus" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-xs focus:border-neon">
+              <option value="Finalizado">Finalizado</option>
+              <option value="En juego">🔴 En juego ahora</option>
+              <option value="Programado">Programado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-0.5 text-[11px]">Ganador</label>
+            <select id="resultWinner" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-1.5 text-white text-xs focus:border-neon">
+              <option value="auto">Automático</option>
+              <option value="pair1">Pareja 1 (o W.O.)</option>
+              <option value="pair2">Pareja 2 (o W.O.)</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-2 flex items-center justify-between">
+          <button type="button" onclick="clearMatchResult()" class="text-[11px] text-red-400 hover:underline">Borrar</button>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="closeModal('resultModal')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">Cancelar</button>
+            <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-neon hover:bg-neon/90 text-slate-950 font-bold text-xs">Guardar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: SORTEO DE ZONAS ================= -->
+  <div id="sorteoModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-3.5 hidden backdrop-blur-md">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-4 sm:p-5 shadow-2xl relative modal-scroll">
+      <button onclick="closeModal('sorteoModal')" class="absolute top-3 right-3 text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-base"></i></button>
+      <h3 class="text-sm sm:text-base font-bold text-white mb-0.5 flex items-center gap-1.5"><i class="fa-solid fa-dice text-neon"></i> Sorteo de zonas</h3>
+      <p id="sorteoModalInfo" class="text-[11px] text-slate-400 mb-3"></p>
+      <input type="hidden" id="sorteoRama"><input type="hidden" id="sorteoCat">
+      <div class="space-y-2.5 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-0.5">Parejas por zona</label>
+          <select id="sorteoSize" onchange="previewSorteo()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 text-white focus:border-neon">
+            <option value="3">3 parejas por zona (recomendado)</option>
+            <option value="4">4 parejas por zona</option>
+          </select>
+        </div>
+        <p id="sorteoPreview" class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-[11px] text-slate-300"></p>
+        <p class="text-[10px] text-slate-500">Se arman partidos todos contra todos dentro de cada zona. Clasifican los 2 primeros. Los horarios y canchas los cargás después desde el fixture.</p>
+        <div class="pt-1 flex items-center justify-end gap-2">
+          <button onclick="closeModal('sorteoModal')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">Cancelar</button>
+          <button onclick="confirmSorteoZonas()" class="px-3.5 py-1.5 rounded-xl bg-neon hover:bg-neon/90 text-slate-950 font-bold flex items-center gap-1"><i class="fa-solid fa-dice"></i> Sortear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase (base de datos + login) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/logic.js"></script>
+  <script src="js/sorteo.js"></script>
+  <script src="js/shell.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

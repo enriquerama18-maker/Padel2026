@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// REGLAS DE SEGURIDAD DE LA BASE DE DATOS
+// Pegalas en: Firebase Console > Firestore Database > Reglas > Publicar
+// IMPORTANTE: cambiá el email por el del dueño (el mismo de js/config.js)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esDueno() {
+      return request.auth != null
+          && request.auth.token.email == 'dueno@tuclub.com';   // <-- CAMBIAR
+    }
+
+    // Ajustes del torneo (nombre, whatsapp, inscripciones abiertas)
+    match /config/{doc} {
+      allow read: if true;
+      allow write: if esDueno();
+    }
+
+    // Parejas: cualquiera puede LEER; cualquiera puede INSCRIBIRSE pero
+    // siempre como "pendiente" (confirmada = false); solo el dueño modifica.
+    match /parejas/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['p1','p2','rama','categoria','grupo','confirmada','creada'])
+                    && request.resource.data.confirmada == false
+                    && request.resource.data.p1 is string && request.resource.data.p1.size() <= 60
+                    && request.resource.data.p2 is string && request.resource.data.p2.size() <= 60
+                    && request.resource.data.rama in ['Masculino','Femenino','Mixto']
+                    && request.resource.data.grupo == '';
+      allow update, delete: if esDueno();
+      allow create: if esDueno();
+    }
+
+    // Teléfonos: cualquiera puede GUARDAR el suyo al inscribirse,
+    // pero SOLO el dueño puede leerlos (privacidad de los jugadores).
+    match /contactos/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['telefono','creada'])
+                    && request.resource.data.telefono is string
+                    && request.resource.data.telefono.size() <= 20;
+      allow read, update, delete: if esDueno();
+      allow create: if esDueno();
+    }
+
+    // Partidos, resultados y llaves: todos leen, solo el dueño escribe
+    match /partidos/{id} {
+      allow read: if true;
+      allow write: if esDueno();
+    }
+  }
+}
